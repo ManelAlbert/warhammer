@@ -1,103 +1,236 @@
-import Image from "next/image";
+
+import { useState } from "react";
+
+
+const FACTIONS = [
+  "Marines Espaciales",
+  "Orkos",
+  "Eldar",
+  "Tiranidos",
+  "Necrones",
+  "Astra Militarum",
+  "Caballeros Grises",
+  "Tau",
+  "Hermanas de Batalla",
+  // Añade más facciones aquí
+];
+
+type Unit = {
+  name: string;
+  points: number;
+};
+
+const UNITS: Record<string, Unit[]> = {
+  "Marines Espaciales": [
+    { name: "Tácticos", points: 90 },
+    { name: "Exploradores", points: 70 },
+    { name: "Dreadnought", points: 150 },
+    { name: "Capitán", points: 120 },
+    { name: "Devastadores", points: 110 },
+  ],
+  Orkos: [
+    { name: "Chicoz", points: 60 },
+    { name: "Noblez", points: 100 },
+    { name: "Garrapatos", points: 40 },
+    { name: "Kaudillo", points: 130 },
+    { name: "Meganoblez", points: 160 },
+  ],
+  Eldar: [
+    { name: "Guardianes", points: 80 },
+    { name: "Videntes", points: 120 },
+    { name: "Banshees", points: 95 },
+  ],
+  Tiranidos: [
+    { name: "Hormagantes", points: 50 },
+    { name: "Guerreros Tiranidos", points: 100 },
+    { name: "Carnifex", points: 180 },
+  ],
+  Necrones: [
+    { name: "Guerreros Necrones", points: 70 },
+    { name: "Inmortales", points: 90 },
+    { name: "Líder Necrón", points: 140 },
+  ],
+  "Astra Militarum": [
+    { name: "Infantería", points: 50 },
+    { name: "Tanque Leman Russ", points: 170 },
+    { name: "Comisario", points: 60 },
+  ],
+  "Caballeros Grises": [
+    { name: "Justicar", points: 110 },
+    { name: "Paladines", points: 150 },
+    { name: "Dreadknight", points: 200 },
+  ],
+  Tau: [
+    { name: "Guerreros de fuego", points: 80 },
+    { name: "Crisis Battlesuit", points: 120 },
+    { name: "Comandante", points: 140 },
+  ],
+  "Hermanas de Batalla": [
+    { name: "Sororitas", points: 70 },
+    { name: "Cañones Castigo", points: 100 },
+    { name: "Canonesa", points: 110 },
+  ],
+};
+
+
+type Rule = {
+  name: string;
+  description: string;
+  appliesTo: string[]; // facciones o unidades
+};
+
+const RULES: Rule[] = [
+  {
+    name: "Sin duplicados de HQ",
+    description: "Solo puedes tener un HQ por ejército.",
+    appliesTo: ["Capitán", "Kaudillo", "Videntes", "Líder Necrón", "Comisario", "Justicar", "Comandante", "Canonesa"],
+  },
+  {
+    name: "Máximo 2000 puntos",
+    description: "El ejército no puede superar los 2000 puntos.",
+    appliesTo: FACTIONS,
+  },
+  // Añade más reglas aquí
+];
+
+type Expansion = {
+  name: string;
+  description: string;
+};
+
+const EXPANSIONS: Expansion[] = [
+  { name: "Arks of Omen", description: "Nuevas reglas de organización de destacamentos." },
+  { name: "Leviathan", description: "Incluye nuevas unidades y misiones." },
+  // Añade más expansiones aquí
+];
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [faction, setFaction] = useState(FACTIONS[0]);
+  const [army, setArmy] = useState<Unit[]>([]);
+  const [selectedExpansions, setSelectedExpansions] = useState<string[]>([]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const availableUnits = UNITS[faction] || [];
+  const totalPoints = army.reduce((sum, unit) => sum + unit.points, 0);
+
+  // Restricciones
+  const HQ_UNITS = ["Capitán", "Kaudillo", "Videntes", "Líder Necrón", "Comisario", "Justicar", "Comandante", "Canonesa"];
+  const hqCount = army.filter(u => HQ_UNITS.includes(u.name)).length;
+  const overPoints = totalPoints > 2000;
+
+  function addUnit(unit: Unit) {
+    // Regla: Solo un HQ
+    if (HQ_UNITS.includes(unit.name) && hqCount >= 1) {
+      alert("Solo puedes tener un HQ por ejército.");
+      return;
+    }
+    setArmy([...army, unit]);
+  }
+
+  function removeUnit(index: number) {
+    setArmy(army.filter((_, i) => i !== index));
+  }
+
+  function toggleExpansion(name: string) {
+    setSelectedExpansions(expansions =>
+      expansions.includes(name)
+        ? expansions.filter(e => e !== name)
+        : [...expansions, name]
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      <h1 className="text-3xl font-bold mb-4 text-center">Warhammer 40,000 - Calculadora de Ejércitos</h1>
+
+      {/* Expansiones */}
+      <div className="mb-4 w-full max-w-md">
+        <h2 className="text-lg font-semibold mb-2">Expansiones activas</h2>
+        <div className="flex flex-wrap gap-2">
+          {EXPANSIONS.map(exp => (
+            <label key={exp.name} className="flex items-center gap-2 bg-white dark:bg-gray-800 px-2 py-1 rounded shadow cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedExpansions.includes(exp.name)}
+                onChange={() => toggleExpansion(exp.name)}
+              />
+              <span>{exp.name}</span>
+            </label>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      </div>
+
+      {/* Facción */}
+      <div className="mb-4">
+        <label className="mr-2 font-semibold">Facción:</label>
+        <select
+          value={faction}
+          onChange={e => {
+            setFaction(e.target.value);
+            setArmy([]);
+          }}
+          className="p-2 rounded border border-gray-300 dark:bg-gray-800 dark:text-white"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          {FACTIONS.map(f => (
+            <option key={f} value={f}>{f}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Unidades disponibles */}
+      <div className="mb-6 w-full max-w-md">
+        <h2 className="text-xl font-semibold mb-2">Unidades disponibles</h2>
+        <ul className="space-y-2">
+          {availableUnits.map((unit, idx) => (
+            <li key={unit.name} className="flex justify-between items-center bg-white dark:bg-gray-800 rounded p-2 shadow">
+              <span>{unit.name} ({unit.points} pts)</span>
+              <button
+                className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                onClick={() => addUnit(unit)}
+              >
+                Añadir
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Tu ejército */}
+      <div className="w-full max-w-md">
+        <h2 className="text-xl font-semibold mb-2">Tu ejército</h2>
+        <ul className="space-y-2 mb-2">
+          {army.length === 0 && <li className="text-gray-500">No has añadido unidades.</li>}
+          {army.map((unit, idx) => (
+            <li key={idx} className="flex justify-between items-center bg-white dark:bg-gray-800 rounded p-2 shadow">
+              <span>{unit.name} ({unit.points} pts)</span>
+              <button
+                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                onClick={() => removeUnit(idx)}
+              >
+                Quitar
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className={"font-bold text-lg " + (overPoints ? "text-red-600" : "")}>Total de puntos: {totalPoints}</div>
+        {overPoints && <div className="text-red-600 font-semibold">¡Has superado el máximo de 2000 puntos!</div>}
+      </div>
+
+      {/* Reglas activas */}
+      <div className="w-full max-w-md mt-6">
+        <h2 className="text-lg font-semibold mb-2">Reglas activas</h2>
+        <ul className="list-disc list-inside text-sm">
+          {RULES.filter(rule =>
+            rule.appliesTo.includes(faction) ||
+            army.some(u => rule.appliesTo.includes(u.name))
+          ).map(rule => (
+            <li key={rule.name} className="mb-1">
+              <span className="font-bold">{rule.name}:</span> {rule.description}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <footer className="mt-10 text-gray-400 text-xs text-center">Escalable para nuevas facciones, unidades, reglas y expansiones. Última actualización: 18 mayo 2025.</footer>
     </div>
   );
 }
