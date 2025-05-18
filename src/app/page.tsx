@@ -14,6 +14,17 @@ const FACTIONS = [
   "Caballeros Grises",
   "Tau",
   "Hermanas de Batalla",
+  "Caballeros Imperiales",
+  "Drukhari",
+  "Mil Hijos",
+  "Death Guard",
+  "Custodes",
+  "Genestealer Cults",
+  "Adeptus Mechanicus",
+  "Harlequins",
+  "Imperio Tau",
+  "Demonios del Caos",
+  "Caballeros del Caos",
   // Añade más facciones aquí
 ];
 
@@ -22,7 +33,63 @@ type Unit = {
   points: number;
 };
 
+// Ejemplo extendido de unidades (puedes seguir añadiendo más)
 const UNITS: Record<string, Unit[]> = {
+  "Caballeros Imperiales": [
+    { name: "Knight Paladin", points: 420 },
+    { name: "Knight Errant", points: 400 },
+    { name: "Knight Warden", points: 430 },
+  ],
+  Drukhari: [
+    { name: "Guerreros Kabalita", points: 60 },
+    { name: "Incubos", points: 90 },
+    { name: "Succubus", points: 80 },
+  ],
+  "Mil Hijos": [
+    { name: "Rubric Marines", points: 105 },
+    { name: "Exalted Sorcerer", points: 120 },
+    { name: "Scarab Occult Terminators", points: 200 },
+  ],
+  "Death Guard": [
+    { name: "Plague Marines", points: 100 },
+    { name: "Lord of Contagion", points: 130 },
+    { name: "Poxwalkers", points: 50 },
+  ],
+  Custodes: [
+    { name: "Custodian Guard", points: 150 },
+    { name: "Shield Captain", points: 170 },
+    { name: "Allarus Custodians", points: 210 },
+  ],
+  "Genestealer Cults": [
+    { name: "Neophyte Hybrids", points: 60 },
+    { name: "Acolyte Hybrids", points: 70 },
+    { name: "Patriarch", points: 120 },
+  ],
+  "Adeptus Mechanicus": [
+    { name: "Skitarii Rangers", points: 80 },
+    { name: "Tech-Priest Dominus", points: 110 },
+    { name: "Ironstrider Ballistarius", points: 120 },
+  ],
+  Harlequins: [
+    { name: "Troupe", points: 90 },
+    { name: "Shadowseer", points: 120 },
+    { name: "Skyweavers", points: 140 },
+  ],
+  "Imperio Tau": [
+    { name: "Guerreros de fuego", points: 80 },
+    { name: "Crisis Battlesuit", points: 120 },
+    { name: "Comandante", points: 140 },
+  ],
+  "Demonios del Caos": [
+    { name: "Bloodletters", points: 90 },
+    { name: "Daemon Prince", points: 180 },
+    { name: "Plaguebearers", points: 80 },
+  ],
+  "Caballeros del Caos": [
+    { name: "War Dog", points: 250 },
+    { name: "Despoiler", points: 420 },
+    { name: "Rampager", points: 430 },
+  ],
   "Marines Espaciales": [
     { name: "Tácticos", points: 90 },
     { name: "Exploradores", points: 70 },
@@ -85,12 +152,25 @@ const RULES: Rule[] = [
   {
     name: "Sin duplicados de HQ",
     description: "Solo puedes tener un HQ por ejército.",
-    appliesTo: ["Capitán", "Kaudillo", "Videntes", "Líder Necrón", "Comisario", "Justicar", "Comandante", "Canonesa"],
+    appliesTo: [
+      "Capitán", "Kaudillo", "Videntes", "Líder Necrón", "Comisario", "Justicar", "Comandante", "Canonesa",
+      "Exalted Sorcerer", "Lord of Contagion", "Shield Captain", "Patriarch", "Tech-Priest Dominus", "Shadowseer", "Daemon Prince"
+    ],
   },
   {
-    name: "Máximo 2000 puntos",
-    description: "El ejército no puede superar los 2000 puntos.",
+    name: "Máximo de puntos personalizable",
+    description: "El ejército no puede superar el máximo de puntos elegido.",
     appliesTo: FACTIONS,
+  },
+  {
+    name: "Mínimo 3 unidades",
+    description: "El ejército debe tener al menos 3 unidades.",
+    appliesTo: FACTIONS,
+  },
+  {
+    name: "Solo una unidad de tipo 'Patriarch' por ejército (Genestealer Cults)",
+    description: "Solo puedes tener un Patriarch en tu ejército Genestealer Cults.",
+    appliesTo: ["Patriarch"],
   },
   // Añade más reglas aquí
 ];
@@ -110,19 +190,30 @@ export default function Home() {
   const [faction, setFaction] = useState(FACTIONS[0]);
   const [army, setArmy] = useState<Unit[]>([]);
   const [selectedExpansions, setSelectedExpansions] = useState<string[]>([]);
+  const [maxPoints, setMaxPoints] = useState<number>(2000);
 
   const availableUnits = UNITS[faction] || [];
   const totalPoints = army.reduce((sum, unit) => sum + unit.points, 0);
 
   // Restricciones
-  const HQ_UNITS = ["Capitán", "Kaudillo", "Videntes", "Líder Necrón", "Comisario", "Justicar", "Comandante", "Canonesa"];
+  const HQ_UNITS = [
+    "Capitán", "Kaudillo", "Videntes", "Líder Necrón", "Comisario", "Justicar", "Comandante", "Canonesa",
+    "Exalted Sorcerer", "Lord of Contagion", "Shield Captain", "Patriarch", "Tech-Priest Dominus", "Shadowseer", "Daemon Prince"
+  ];
   const hqCount = army.filter(u => HQ_UNITS.includes(u.name)).length;
-  const overPoints = totalPoints > 2000;
+  const patriarchCount = army.filter(u => u.name === "Patriarch").length;
+  const overPoints = totalPoints > maxPoints;
+  const underMinUnits = army.length > 0 && army.length < 3;
 
   function addUnit(unit: Unit) {
     // Regla: Solo un HQ
     if (HQ_UNITS.includes(unit.name) && hqCount >= 1) {
       alert("Solo puedes tener un HQ por ejército.");
+      return;
+    }
+    // Regla: Solo un Patriarch en Genestealer Cults
+    if (faction === "Genestealer Cults" && unit.name === "Patriarch" && patriarchCount >= 1) {
+      alert("Solo puedes tener un Patriarch en tu ejército Genestealer Cults.");
       return;
     }
     setArmy([...army, unit]);
@@ -140,9 +231,28 @@ export default function Home() {
     );
   }
 
+  function handleMaxPointsChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value) && value > 0) setMaxPoints(value);
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
       <h1 className="text-3xl font-bold mb-4 text-center">Warhammer 40,000 - Calculadora de Ejércitos</h1>
+
+      {/* Configuración de puntos máximos */}
+      <div className="mb-4 w-full max-w-md flex items-center gap-4">
+        <label className="font-semibold">Puntos máximos:</label>
+        <input
+          type="number"
+          min={500}
+          max={10000}
+          step={50}
+          value={maxPoints}
+          onChange={handleMaxPointsChange}
+          className="p-2 rounded border border-gray-300 dark:bg-gray-800 dark:text-white w-32"
+        />
+      </div>
 
       {/* Expansiones */}
       <div className="mb-4 w-full max-w-md">
